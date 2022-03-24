@@ -277,18 +277,26 @@ def smoothing_PlusMinus_rx0(MSK, Hobs, rx0max, AreaMatrix):
     TheMultiplier = (1 - rx0max) / (1 + rx0max)
     tol = 0.000001
     ValueFct = 0
+    cont = 0
+    contold = 0
+
+    eta_xi = np.where(MSK==1)
 
     while(True):
         IsFinished = 1
-        for iEta in range(eta_rho):
-            for iXi in range(xi_rho):
-                if (MSK[iEta, iXi] == 1):
+        if cont>0:
+            print(iEta,iXi, RetBathy[iEta,iXi]-LowerBound, cont, cont-contold)
+            contold = cont
+        for iEta, iXi in zip(eta_xi[0],eta_xi[1]):
+        #for iEta in range(eta_rho):
+        #    for iXi in range(xi_rho):
+        #        if (MSK[iEta, iXi] == 1):
                     Area = AreaMatrix[iEta, iXi]
                     for ineigh in range(4):
                         iEtaN = iEta + ListNeigh[ineigh,0]
                         iXiN = iXi + ListNeigh[ineigh,1]
                         if (iEtaN <= eta_rho-1 and iEtaN >= 0 and iXiN <= xi_rho-1 \
-                            and iXiN >= 0 and MSK[iEtaN,iXiN] == 1):
+                                and iXiN >= 0):# and MSK[iEtaN,iXiN] == 1):
                             AreaN = AreaMatrix[iEtaN,iXiN]
                             LowerBound = RetBathy[iEtaN,iXiN] * TheMultiplier
                             if ((RetBathy[iEta,iXi] - LowerBound) < -tol):
@@ -299,6 +307,7 @@ def smoothing_PlusMinus_rx0(MSK, Hobs, rx0max, AreaMatrix):
                                 RetBathy[iEtaN,iXiN] = RetBathy[iEtaN,iXiN] - Area * h
                                 HmodifVal = HmodifVal + abs(h)
                                 ValueFct = ValueFct + abs(h) * (Area + AreaN)
+                                cont += 1
 
         if (IsFinished == 1):
             break
