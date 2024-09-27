@@ -3,7 +3,6 @@
 import numpy as np
 #from pyroms import _remapping
 
-import creep
 
 def flood2d(varz, Cgrd, Cpos='t', irange=None, jrange=None, \
           spval=-9.99e+33, dmax=0):
@@ -22,6 +21,7 @@ def flood2d(varz, Cgrd, Cpos='t', irange=None, jrange=None, \
     Flood varz on Cgrd
     """
 
+    import creep
     varz = varz.copy()
     varz = np.array(varz)
 

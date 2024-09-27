@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 import numpy as np
-from pyroms import _remapping
 
 import pyroms
 
@@ -24,6 +23,7 @@ def flood(varz, Cgrd, Cpos='t', irange=None, jrange=None, \
 
     Flood varz on Cgrd
     """
+    from pyroms import _remapping
 
     varz = varz.copy()
     varz = np.array(varz)
