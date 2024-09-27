@@ -1,6 +1,5 @@
 from numpy import *
 import matplotlib.pyplot as plt
-from mpl_toolkits.basemap import Basemap
 import pyroms
 
 
@@ -97,23 +96,24 @@ def quiver(uvar, vvar, tindex, depth, gridid, \
     else:
         range = plt.axis()
 
+
     if uscale is None:
         if proj is not None:
-            qv = Basemap.quiver(proj, x[::d,::d], y[::d,::d], \
-                                real(U[::d,::d]), imag(U[::d,::d]), \
-                                linewidths=0.01)
+            qv = ax.quiver(x[::d, ::d], y[::d, ::d], 
+                        real(U[::d, ::d]), imag(U[::d, ::d]), 
+                        linewidths=0.01, transform=ccrs.PlateCarree())
         else:
-            qv = plt.quiver(lon[::d,::d], lat[::d,::d], \
-                            real(U[::d,::d]), imag(U[::d,::d]), \
+            qv = plt.quiver(lon[::d, ::d], lat[::d, ::d], 
+                            real(U[::d, ::d]), imag(U[::d, ::d]), 
                             linewidths=0.01)
     else:
         if proj is not None:
-            qv = Basemap.quiver(proj, x[::d,::d], y[::d,::d], \
-                                real(U[::d,::d]), imag(U[::d,::d]), \
-                                scale=uscale, linewidths=0.01)
+            qv = ax.quiver(x[::d, ::d], y[::d, ::d], 
+                        real(U[::d, ::d]), imag(U[::d, ::d]), 
+                        scale=uscale, linewidths=0.01, transform=ccrs.PlateCarree())
         else:
-            qv = plt.quiver(lon[::d,::d], lat[::d,::d], \
-                            real(U[::d,::d]), imag(U[::d,::d]), \
+            qv = plt.quiver(lon[::d, ::d], lat[::d, ::d], 
+                            real(U[::d, ::d]), imag(U[::d, ::d]), 
                             scale=uscale, linewidths=0.01)
 
     if proj is None:

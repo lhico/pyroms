@@ -18,9 +18,11 @@ from matplotlib.lines import Line2D
 #from matplotlib.mlab import dist_point_to_segment      # gone in 3.1.0
 #from matplotlib.nxutils import points_inside_poly      #decrepeted in version 1.3.0. Use maplotlib.path instead.
 
+from pyproj import Proj
+import pyproj
 
-from mpl_toolkits.basemap import Basemap
-from mpl_toolkits.basemap import pyproj
+# from mpl_toolkits.basemap import Basemap
+# from mpl_toolkits.basemap import pyproj
 
 try:
     import scipy.spatial.cKDTree as KDTree
@@ -1247,109 +1249,109 @@ def rho_to_vert_geo(lonr, latr, lonp, latp):
     return lon, lat
 
 
-class edit_mask_mesh(object):
-    """
-    Interactive mask editor
+# class edit_mask_mesh(object):
+#     """
+#     Interactive mask editor
 
-    edit_mask_mesh(grd, proj)
+#     edit_mask_mesh(grd, proj)
 
-    Edit grd mask. Mask/Unsmask cell by a simple click on the cell.
-    Mask modification are store in mask_change.txt for further use.
+#     Edit grd mask. Mask/Unsmask cell by a simple click on the cell.
+#     Mask modification are store in mask_change.txt for further use.
 
-    Key commands:
-        e : toggle between Editing/Viewing mode
-    """
+#     Key commands:
+#         e : toggle between Editing/Viewing mode
+#     """
 
-    def _on_key(self, event):
-        if event.key == 'e':
-            self._clicking = not self._clicking
-            plt.title('Editing %s -- click "e" to toggle' % self._clicking)
-            plt.draw()
+#     def _on_key(self, event):
+#         if event.key == 'e':
+#             self._clicking = not self._clicking
+#             plt.title('Editing %s -- click "e" to toggle' % self._clicking)
+#             plt.draw()
 
-    def _on_click(self, event):
-        x, y = event.xdata, event.ydata
-        if event.button==1 and event.inaxes is not None and self._clicking == True:
-            d = (x-self._xc)**2 + (y-self._yc)**2
-            if isinstance(self.xv, np.ma.MaskedArray):
-                idx = np.argwhere(d[~self._xc.mask] == d.min())
-            else:
-                idx = np.argwhere(d.flatten() == d.min())
-            self._mask[idx] = float(not self._mask[idx])
-            j, i = np.argwhere(d == d.min())[0]
-            self.mask[j, i] = float(not self.mask[j, i])
-            #open output file
-            f = open('mask_change.txt','a')
-            #value = (i, j, self.mask[i, j])
-            #s = str(value)
-            s = '%d %d %f' %(i, j, self.mask[j, i])
-            f.write(s + '\n')
-            #close file
-            f.close()
-            self._pc.set_array(self._mask)
-            self._pc.changed()
-            plt.draw()
+#     def _on_click(self, event):
+#         x, y = event.xdata, event.ydata
+#         if event.button==1 and event.inaxes is not None and self._clicking == True:
+#             d = (x-self._xc)**2 + (y-self._yc)**2
+#             if isinstance(self.xv, np.ma.MaskedArray):
+#                 idx = np.argwhere(d[~self._xc.mask] == d.min())
+#             else:
+#                 idx = np.argwhere(d.flatten() == d.min())
+#             self._mask[idx] = float(not self._mask[idx])
+#             j, i = np.argwhere(d == d.min())[0]
+#             self.mask[j, i] = float(not self.mask[j, i])
+#             #open output file
+#             f = open('mask_change.txt','a')
+#             #value = (i, j, self.mask[i, j])
+#             #s = str(value)
+#             s = '%d %d %f' %(i, j, self.mask[j, i])
+#             f.write(s + '\n')
+#             #close file
+#             f.close()
+#             self._pc.set_array(self._mask)
+#             self._pc.changed()
+#             plt.draw()
 
-    def __init__(self, grd, proj=None, **kwargs):
+#     def __init__(self, grd, proj=None, **kwargs):
 
-        if type(grd).__name__ == 'ROMS_Grid':
-            try:
-                xv = grd.hgrid.lon_vert
-                yv = grd.hgrid.lat_vert
-                mask = grd.hgrid.mask_rho
-            except:
-                xv = grd.hgrid.x_vert
-                yv = grd.hgrid.y_vert
-                mask = grd.hgrid.mask_rho
+#         if type(grd).__name__ == 'ROMS_Grid':
+#             try:
+#                 xv = grd.hgrid.lon_vert
+#                 yv = grd.hgrid.lat_vert
+#                 mask = grd.hgrid.mask_rho
+#             except:
+#                 xv = grd.hgrid.x_vert
+#                 yv = grd.hgrid.y_vert
+#                 mask = grd.hgrid.mask_rho
 
-        if type(grd).__name__ == 'CGrid_geo':
-            try:
-                xv = grd.lon_vert
-                yv = grd.lat_vert
-                mask = grd.mask_rho
-            except:
-                xv = grd.x_vert
-                yv = grd.y_vert
-                mask = grd.mask_rho
+#         if type(grd).__name__ == 'CGrid_geo':
+#             try:
+#                 xv = grd.lon_vert
+#                 yv = grd.lat_vert
+#                 mask = grd.mask_rho
+#             except:
+#                 xv = grd.x_vert
+#                 yv = grd.y_vert
+#                 mask = grd.mask_rho
 
-        assert xv.shape == yv.shape, 'xv and yv must have the same shape'
-        for dx, dq in zip(xv.shape, mask.shape):
-             assert dx==dq+1, \
-             '''xv and yv must be cell verticies
-             (i.e., one cell bigger in each dimension)'''
+#         assert xv.shape == yv.shape, 'xv and yv must have the same shape'
+#         for dx, dq in zip(xv.shape, mask.shape):
+#              assert dx==dq+1, \
+#              '''xv and yv must be cell verticies
+#              (i.e., one cell bigger in each dimension)'''
 
-        self.xv = xv
-        self.yv = yv
+#         self.xv = xv
+#         self.yv = yv
 
-        self.mask = mask
+#         self.mask = mask
 
-        self.proj = proj
+#         self.proj = proj
 
-        land_color = kwargs.pop('land_color', (0.6, 1.0, 0.6))
-        sea_color = kwargs.pop('sea_color', (0.6, 0.6, 1.0))
+#         land_color = kwargs.pop('land_color', (0.6, 1.0, 0.6))
+#         sea_color = kwargs.pop('sea_color', (0.6, 0.6, 1.0))
 
-        cm = plt.matplotlib.colors.ListedColormap([land_color, sea_color],
-                                                 name='land/sea')
+#         cm = plt.matplotlib.colors.ListedColormap([land_color, sea_color],
+#                                                  name='land/sea')
 
-        if self.proj is None:
-            self._pc = plt.pcolor(xv, yv, mask, cmap=cm, vmin=0, vmax=1, edgecolor='k', **kwargs)
-        else:
-            xv, yv = self.proj(xv, yv)
-            self._pc = Basemap.pcolor(self.proj, xv, yv, mask, cmap=cm, vmin=0, vmax=1, edgecolor='k', **kwargs)
-            self.proj.drawcoastlines()
+#         if self.proj is None:
+#             self._pc = plt.pcolor(xv, yv, mask, cmap=cm, vmin=0, vmax=1, edgecolor='k', **kwargs)
+#         else:
+#             xv, yv = self.proj(xv, yv)
+#             self._pc = Basemap.pcolor(self.proj, xv, yv, mask, cmap=cm, vmin=0, vmax=1, edgecolor='k', **kwargs)
+#             self.proj.drawcoastlines()
 
-        self._xc = 0.25*(xv[1:,1:]+xv[1:,:-1]+xv[:-1,1:]+xv[:-1,:-1])
-        self._yc = 0.25*(yv[1:,1:]+yv[1:,:-1]+yv[:-1,1:]+yv[:-1,:-1])
+#         self._xc = 0.25*(xv[1:,1:]+xv[1:,:-1]+xv[:-1,1:]+xv[:-1,:-1])
+#         self._yc = 0.25*(yv[1:,1:]+yv[1:,:-1]+yv[:-1,1:]+yv[:-1,:-1])
 
-        if isinstance(self.xv, np.ma.MaskedArray):
-            self._mask = mask[~self._xc.mask]
-        else:
-            self._mask = mask.flatten()
+#         if isinstance(self.xv, np.ma.MaskedArray):
+#             self._mask = mask[~self._xc.mask]
+#         else:
+#             self._mask = mask.flatten()
 
-        plt.connect('button_press_event', self._on_click)
-        plt.connect('key_press_event', self._on_key)
-        self._clicking = False
-        plt.title('Editing %s -- click "e" to toggle' % self._clicking)
-        plt.draw()
+#         plt.connect('button_press_event', self._on_click)
+#         plt.connect('key_press_event', self._on_key)
+#         self._clicking = False
+#         plt.title('Editing %s -- click "e" to toggle' % self._clicking)
+#         plt.draw()
 
 
 
@@ -1489,100 +1491,102 @@ def uvp_masks(rmask):
 
 
 
-class get_position_from_map(object):
-    """
-    Get cell index position Interactively
+# class get_position_from_map(object):
+#     """
+#     Get cell index position Interactively
 
-    get_position_from_map(grd, proj)
+#     get_position_from_map(grd, proj)
 
-    Get index i, j as well as lon, lat coordinates for one cell
-    simply by clicking on the cell.
+#     Get index i, j as well as lon, lat coordinates for one cell
+#     simply by clicking on the cell.
 
-    Key commands:
-        i : toggle between Interactive/Viewing mode
-    """
-    def _on_key(self, event):
-        if event.key == 'i':
-            self._clicking = not self._clicking
-            plt.title('Interactive %s -- click "i" to toggle' % self._clicking)
-            plt.draw()
+#     Key commands:
+#         i : toggle between Interactive/Viewing mode
+#     """
+#     def _on_key(self, event):
+#         if event.key == 'i':
+#             self._clicking = not self._clicking
+#             plt.title('Interactive %s -- click "i" to toggle' % self._clicking)
+#             plt.draw()
 
-    def _on_click(self, event):
-        x, y = event.xdata, event.ydata
-        if event.button==1 and event.inaxes is not None and self._clicking == True:
-            d = (x-self._xc)**2 + (y-self._yc)**2
-            if isinstance(self.xv, np.ma.MaskedArray):
-                idx = np.argwhere(d[~self._xc.mask] == d.min())
-            else:
-                idx = np.argwhere(d.flatten() == d.min())
-            j, i = np.argwhere(d == d.min())[0]
-            print('Position on the grid (rho point): i =', i, ', j =', j)
-            if self.proj is not None:
-                lon, lat = self.proj(self._xc[j,i], self._yc[j,i], inverse=True)
-                print('corresponding geographical position : lon = ', lon, ', lat =', lat)
-            else:
-                print('corresponding cartesian position : x = ', self._xc[j,i], ', y =', self._yc[j,i])
+#     def _on_click(self, event):
+#         x, y = event.xdata, event.ydata
+#         if event.button==1 and event.inaxes is not None and self._clicking == True:
+#             d = (x-self._xc)**2 + (y-self._yc)**2
+#             if isinstance(self.xv, np.ma.MaskedArray):
+#                 idx = np.argwhere(d[~self._xc.mask] == d.min())
+#             else:
+#                 idx = np.argwhere(d.flatten() == d.min())
+#             j, i = np.argwhere(d == d.min())[0]
+#             print('Position on the grid (rho point): i =', i, ', j =', j)
+#             if self.proj is not None:
+#                 lon, lat = self.proj(self._xc[j,i], self._yc[j,i], inverse=True)
+#                 print('corresponding geographical position : lon = ', lon, ', lat =', lat)
+#             else:
+#                 print('corresponding cartesian position : x = ', self._xc[j,i], ', y =', self._yc[j,i])
 
-    def __init__(self, grd, proj=None, **kwargs):
+#     def __init__(self, grd, proj=None, **kwargs):
 
-        try:
-            xv = grd.hgrid.lon_vert
-            yv = grd.hgrid.lat_vert
-            mask = grd.hgrid.mask_rho
-        except:
-            xv = grd.hgrid.x_vert
-            yv = grd.hgrid.y_vert
-            mask = grd.hgrid.mask_rho
+#         try:
+#             xv = grd.hgrid.lon_vert
+#             yv = grd.hgrid.lat_vert
+#             mask = grd.hgrid.mask_rho
+#         except:
+#             xv = grd.hgrid.x_vert
+#             yv = grd.hgrid.y_vert
+#             mask = grd.hgrid.mask_rho
 
-        assert xv.shape == yv.shape, 'xv and yv must have the same shape'
-        for dx, dq in zip(xv.shape, mask.shape):
-             assert dx==dq+1, \
-             '''xv and yv must be cell verticies
-             (i.e., one cell bigger in each dimension)'''
+#         assert xv.shape == yv.shape, 'xv and yv must have the same shape'
+#         for dx, dq in zip(xv.shape, mask.shape):
+#              assert dx==dq+1, \
+#              '''xv and yv must be cell verticies
+#              (i.e., one cell bigger in each dimension)'''
 
-        self.xv = xv
-        self.yv = yv
+#         self.xv = xv
+#         self.yv = yv
 
-        self.mask = mask
+#         self.mask = mask
 
-        self.proj = proj
+#         self.proj = proj
 
-        land_color = kwargs.pop('land_color', (0.6, 1.0, 0.6))
-        sea_color = kwargs.pop('sea_color', (0.6, 0.6, 1.0))
+#         land_color = kwargs.pop('land_color', (0.6, 1.0, 0.6))
+#         sea_color = kwargs.pop('sea_color', (0.6, 0.6, 1.0))
 
-        cm = plt.matplotlib.colors.ListedColormap([land_color, sea_color],
-                                                 name='land/sea')
+#         cm = plt.matplotlib.colors.ListedColormap([land_color, sea_color],
+#                                                  name='land/sea')
 
-        if self.proj is None:
-            self._pc = plt.pcolor(xv, yv, mask, cmap=cm, vmin=0, vmax=1, edgecolor='k', **kwargs)
+#         if self.proj is None:
+#             self._pc = plt.pcolor(xv, yv, mask, cmap=cm, vmin=0, vmax=1, edgecolor='k', **kwargs)
 
-        else:
-            xv, yv = self.proj(xv, yv)
-            self._pc = Basemap.pcolor(self.proj, xv, yv, mask, cmap=cm, vmin=0, vmax=1, edgecolor='k', **kwargs)
-            self.proj.drawcoastlines()
+#         else:
+#             xv, yv = self.proj(xv, yv)
+#             self._pc = Basemap.pcolor(self.proj, xv, yv, mask, cmap=cm, vmin=0, vmax=1, edgecolor='k', **kwargs)
+#             self.proj.drawcoastlines()
 
-        self._xc = 0.25*(xv[1:,1:]+xv[1:,:-1]+xv[:-1,1:]+xv[:-1,:-1])
-        self._yc = 0.25*(yv[1:,1:]+yv[1:,:-1]+yv[:-1,1:]+yv[:-1,:-1])
+#         self._xc = 0.25*(xv[1:,1:]+xv[1:,:-1]+xv[:-1,1:]+xv[:-1,:-1])
+#         self._yc = 0.25*(yv[1:,1:]+yv[1:,:-1]+yv[:-1,1:]+yv[:-1,:-1])
 
-        plt.connect('button_press_event', self._on_click)
-        plt.connect('key_press_event', self._on_key)
-        self._clicking = False
-        plt.title('Interactive %s -- click "i" to toggle' % self._clicking)
-        plt.draw()
+#         plt.connect('button_press_event', self._on_click)
+#         plt.connect('key_press_event', self._on_key)
+#         self._clicking = False
+#         plt.title('Interactive %s -- click "i" to toggle' % self._clicking)
+#         plt.draw()
 
 
 if __name__ == '__main__':
     geographic = False
     if geographic:
-        from mpl_toolkits.basemap import Basemap
-        proj = Basemap(projection='lcc',
-                       resolution='i',
-                       llcrnrlon=-72.0,
-                       llcrnrlat= 40.0,
-                       urcrnrlon=-63.0,
-                       urcrnrlat=47.0,
-                       lat_0=43.0,
-                       lon_0=-62.5)
+        import cartopy.crs as ccrs
+
+        # Cartopy Lambert Conformal Conic projection equivalent to the Basemap configuration
+        proj = ccrs.LambertConformal(
+            central_longitude=-62.5,  # lon_0 in Basemap
+            central_latitude=43.0,    # lat_0 in Basemap
+            standard_parallels=(43.0,),  # latitude of true scale (optional, same as lat_0 here)
+            lower_left_corner=(40.0, -72.0),  # llcrnrlat and llcrnrlon in Basemap
+            upper_right_corner=(47.0, -63.0)  # urcrnrlat and urcrnrlon in Basemap
+        )
+
 
         lon = (-71.977385177601761, -70.19173825913137,
                -63.045075098584945,-64.70104074097425)

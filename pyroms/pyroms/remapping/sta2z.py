@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 import numpy as np
-from .. import _interp
 import pdb
 
 def sta2z(var, grd, grdz, Cpos='rho', srange=None, \
@@ -17,6 +16,7 @@ def sta2z(var, grd, grdz, Cpos='rho', srange=None, \
 
     Interpolate the variable from stations grid grd to z vertical grid grdz
     """
+    from .. import _interp
 
     var = var.copy()
 

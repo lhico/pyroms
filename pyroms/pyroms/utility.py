@@ -3,14 +3,15 @@
 import sys
 import numpy as np
 import matplotlib as mpl
-from mpl_toolkits.basemap import Basemap
+# from mpl_toolkits.basemap import Basemap
+import cartopy.crs as ccrs
+
 import time
 from datetime import datetime
 #from matplotlib.nxutils import pnpoly
 from scipy import interpolate
 
 import pyroms
-from . import _interp
 
 
 def get_lonlat(iindex, jindex, grd, Cpos='rho'):
@@ -267,16 +268,28 @@ def get_grid_proj(grd, type='merc', resolution='h', **kwargs):
     lat_1 = lat_min
     lat_2 = lat_max
 
-    if type == 'lcc' or type == 'stere':
-        map = Basemap(projection=type, width=width, height=height, \
-                      lat_1=lat_1, lat_2=lat_2, lat_0=lat_0, lon_0=lon_0, \
-                      resolution=resolution, **kwargs)
-    else:
-        map = Basemap(projection=type, llcrnrlon=lon_min, llcrnrlat=lat_min, \
-                      urcrnrlon=lon_max, urcrnrlat=lat_max, \
-                      lat_0=lat_0, lon_0=lon_0, \
-                      resolution=resolution, **kwargs)
 
+    if type == 'lcc' or type == 'stere':
+        if type == 'lcc':
+            proj = ccrs.LambertConformal(central_longitude=lon_0, 
+                                        central_latitude=lat_0, 
+                                        standard_parallels=(lat_1, lat_2), 
+                                        width=width, 
+                                        height=height)
+        else:  # 'stere'
+            proj = ccrs.Stereographic(central_longitude=lon_0, 
+                                    central_latitude=lat_0, 
+                                    false_easting=0, 
+                                    false_northing=0)
+
+        # You can create a figure and axes with the defined projection
+        fig, ax = plt.subplots(subplot_kw={'projection': proj})
+
+    else:
+        proj = ccrs.PlateCarree()  # Change to the appropriate projection if needed
+        fig, ax = plt.subplots(subplot_kw={'projection': proj})
+        ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
+        
     return map
 
 
@@ -332,6 +345,7 @@ def roms_varlist(option):
 
 
 def get_bottom(varz, mask, spval=1e37):
+    from . import _interp
 
     assert len(varz.shape) == 3, 'var must be 3D'
 
@@ -347,6 +361,7 @@ def get_bottom(varz, mask, spval=1e37):
 
 
 def get_surface(varz, mask, spval=1e37):
+    from . import _interp
 
     assert len(varz.shape) == 3, 'var must be 3D'
 

@@ -1,13 +1,11 @@
 # encoding: utf-8
 
 import numpy as np
-from . import _iso
-from . import _obs_interp
-
 import pyroms
 
 
 def zslice(var, depth, grd, Cpos='rho', vert=False, mode='linear'):
+    from . import _iso
     """
     zslice, lon, lat = zslice(var, depth, grd)
 
@@ -1812,6 +1810,8 @@ def interm_pt(pnear, pk, pai, pbi, paj, pbj):
 def hindices(lon, lat, grd, Cpos='rho', rectangular=0, spval=1e37):
     """
     """
+    from . import _obs_interp
+
 
     if type(grd).__name__ == 'ROMS_Grid':
         spherical = grd.hgrid.spherical
@@ -1869,6 +1869,7 @@ def hindices(lon, lat, grd, Cpos='rho', rectangular=0, spval=1e37):
 def obs_interp2d(Finp, lon, lat, grd, Cpos='rho', rectangular=0, spval=1e37):
     """
     """
+    from . import _obs_interp
 
     Iout, Jout = hindices(lon, lat, grd, Cpos=Cpos, rectangular=rectangular, spval=spval)
 

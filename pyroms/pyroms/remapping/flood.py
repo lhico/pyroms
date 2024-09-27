@@ -1,10 +1,8 @@
 # encoding: utf-8
 
 import numpy as np
-from .. import _remapping
 
 import pyroms
-from pyroms import _remapping
 from scipy.spatial import cKDTree
 
 
@@ -28,6 +26,8 @@ def flood(varz, grdz, Cpos='rho', irange=None, jrange=None, \
 
     Flood varz on gridz
     """
+    # from pyroms import _remapping
+    from .. import _remapping
 
     varz = varz.copy()
     varz = np.array(varz)

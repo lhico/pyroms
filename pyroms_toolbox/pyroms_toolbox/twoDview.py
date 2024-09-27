@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from  matplotlib import cm, colors
-from mpl_toolkits.basemap import Basemap
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+
 import pyroms
 import pyroms_toolbox
 
@@ -167,39 +169,35 @@ def twoDview(var, tindex, grid, filename=None, \
     #plt.clf()
 
     if proj is not None:
-        map = Basemap(projection=proj, llcrnrlon=lon_min, llcrnrlat=lat_min, \
-              urcrnrlon=lon_max, urcrnrlat=lat_max, lat_0=lat_0, lon_0=lon_0, \
-                 resolution='h', area_thresh=5.)
-        #map = pyroms.utility.get_grid_proj(grd, type=proj)
-        x, y = list(map(lon,lat))
+        projection = ccrs.PlateCarree() if proj == 'cyl' else ccrs.Stereographic(central_latitude=lat_0, central_longitude=lon_0)
+        fig, ax_map = plt.subplots(subplot_kw={'projection': projection})
+        ax_map.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
+        x, y = lon, lat
 
     if fill_land and proj is not None:
-        # fill land and draw coastlines
-        map.drawcoastlines()
-        map.fillcontinents(color='grey')
+        ax_map.coastlines(resolution='10m')
+        ax_map.add_feature(cfeature.LAND, color='grey')
     else:
         if proj is not None:
-            Basemap.pcolor(map, x, y, mask, vmin=-2, cmap=cm.gray, edgecolors='face')
-            pyroms_toolbox.plot_coast_line(grd, map)
+            mesh = ax_map.pcolormesh(x, y, mask, vmin=-2, cmap=cm.gray, transform=ccrs.PlateCarree())
+            pyroms_toolbox.plot_coast_line(grd, ax_map)
         else:
-            plt.pcolor(lon, lat, mask, vmin=-2, cmap=cm.gray, edgecolors='face')
+            plt.pcolor(lon, lat, mask, vmin=-2, cmap=cm.gray)
             pyroms_toolbox.plot_coast_line(grd)
 
     if fill:
         if proj is not None:
-            cf = Basemap.contourf(map, x, y, var, vc, cmap = pal, \
-                                  norm = pal_norm)
+            cf = ax_map.contourf(x, y, var, vc, cmap=pal, norm=pal_norm, transform=ccrs.PlateCarree())
         else:
-            cf = plt.contourf(lon, lat, var, vc, cmap = pal, \
-                              norm = pal_norm)
+            cf = plt.contourf(lon, lat, var, vc, cmap=pal, norm=pal_norm)
     else:
         if proj is not None:
-            cf = Basemap.pcolor(map, x, y, var, cmap = pal, norm = pal_norm, edgecolors='face')
+            cf = ax_map.pcolormesh(x, y, var, cmap=pal, norm=pal_norm, edgecolors='face', transform=ccrs.PlateCarree())
         else:
-            cf = plt.pcolor(lon, lat, var, cmap = pal, norm = pal_norm, edgecolors='face')
+            cf = plt.pcolor(lon, lat, var, cmap=pal, norm=pal_norm, edgecolors='face')
 
     if clb:
-        clb = plt.colorbar(cf, fraction=0.075,format='%.2f')
+        clb = plt.colorbar(cf, fraction=0.075, format='%.2f')
         for t in clb.ax.get_yticklabels():
             t.set_fontsize(fts)
 
@@ -208,34 +206,28 @@ def twoDview(var, tindex, grid, filename=None, \
             raise Warning('Please run again with fill=True to overlay contour.')
         else:
             if proj is not None:
-                Basemap.contour(map, x, y, var, vc[::d], colors='k', linewidths=0.5, linestyles='solid')
+                ax_map.contour(x, y, var, vc[::d], colors='k', linewidths=0.5, linestyles='solid', transform=ccrs.PlateCarree())
             else:
                 plt.contour(lon, lat, var, vc[::d], colors='k', linewidths=0.5, linestyles='solid')
 
     if proj is None and range is not None:
         plt.axis(range)
 
-
     if title is not None:
-            plt.title(title, fontsize=fts+4)
+        plt.title(title, fontsize=fts + 4)
 
     if proj is not None:
-        map.drawmeridians(np.arange(lon_min,lon_max, (lon_max-lon_min)/5.), \
-                          labels=[0,0,0,1], fmt='%.1f')
-        map.drawparallels(np.arange(lat_min,lat_max, (lat_max-lat_min)/5.), \
-                          labels=[1,0,0,0], fmt='%.1f')
+        ax_map.gridlines(draw_labels=True, xlocs=np.arange(lon_min, lon_max, (lon_max - lon_min) / 5.),
+                        ylocs=np.arange(lat_min, lat_max, (lat_max - lat_min) / 5.))
 
     if outfile is not None:
-        if outfile.find('.png') != -1 or outfile.find('.svg') != -1 or \
-           outfile.find('.eps') != -1:
+        if outfile.endswith(('.png', '.svg', '.eps')):
             print('Write figure to file', outfile)
-            plt.savefig(outfile, dpi=200, facecolor='w', edgecolor='w', \
-                        orientation='portrait')
+            plt.savefig(outfile, dpi=200, facecolor='w', edgecolor='w', orientation='portrait')
         else:
             print('Unrecognized file extension. Please use .png, .svg or .eps file extension.')
-
 
     if proj is None:
         return
     else:
-        return map
+        return ax_map

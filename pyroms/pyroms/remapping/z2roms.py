@@ -1,8 +1,6 @@
 # encoding: utf-8
 
 import numpy as np
-from .. import _interp
-from .. import _remapping
 
 import pyroms
 
@@ -27,6 +25,8 @@ def z2roms(varz, grdz, grd, Cpos='rho', irange=None, jrange=None, \
 
     Interpolate the variable from z vertical grid grdz to ROMS grid grd
     """
+    from .. import _interp
+    from .. import _remapping
 
     varz = varz.copy()
 

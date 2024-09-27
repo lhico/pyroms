@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 import numpy as np
-from .. import _interp
 
 def roms2z(var, grd, grdz, Cpos='rho', irange=None, jrange=None, \
            spval=1e37, mode='linear'):
@@ -18,6 +17,7 @@ def roms2z(var, grd, grdz, Cpos='rho', irange=None, jrange=None, \
 
     Interpolate the variable from ROMS grid grd to z vertical grid grdz
     """
+    from .. import _interp
 
     var = var.copy()
 

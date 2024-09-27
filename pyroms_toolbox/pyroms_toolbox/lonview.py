@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from  matplotlib import cm, colors
-from mpl_toolkits.basemap import Basemap
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 import pyroms
 
 
@@ -188,24 +189,35 @@ def lonview(var, tindex, longitude, gridid, filename=None, \
         lat_min = lat.min()
         lat_max = lat.max()
         lat_0 = (lat_min + lat_max) / 2.
-        map = Basemap(projection='merc', llcrnrlon=lon_min, llcrnrlat=lat_min, \
-                 urcrnrlon=lon_max, urcrnrlat=lat_max, lat_0=lat_0, lon_0=lon_0, \
-                 resolution='i', area_thresh=10.)
-        x, y = list(map(lon,lat))
+
+        # Create a Cartopy map with the Mercator projection
+        fig, ax_map = plt.subplots(subplot_kw={'projection': ccrs.Mercator()})
+        ax_map.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
+
+        # Transform the coordinates to the map projection
+        x, y = lon, lat
+
         if latrange is None:
-            xs, ys = list(map(lons[0,:],lats[0,:]))
+            xs, ys = lons[0, :], lats[0, :]
         else:
-            c1 = lats[0,:] >= latrange[0]
-            c2 = lats[0,:] <= latrange[1]
+            c1 = lats[0, :] >= latrange[0]
+            c2 = lats[0, :] <= latrange[1]
             c = c1 & c2
             idx = np.where(c == True)
-            xs, ys = list(map(lons[0,idx[0]],lats[0,idx[0]]))
-        # fill land and draw coastlines
-        map.drawcoastlines()
-        map.fillcontinents(color='grey')
-        #map.drawmapboundary()
-        Basemap.pcolor(map, x, y, varm, axes=ax_map)
-        Basemap.plot(map, xs, ys, 'k-', linewidth=3, axes=ax_map)
+            xs, ys = lons[0, idx[0]], lats[0, idx[0]]
+
+        # Draw coastlines and fill continents
+        ax_map.coastlines(resolution='10m')
+        ax_map.add_feature(cfeature.LAND, color='grey')
+
+        # Plot the data
+        mesh = ax_map.pcolormesh(x, y, varm, transform=ccrs.PlateCarree(), cmap='viridis')
+
+        # Plot the line
+        ax_map.plot(xs, ys, 'k-', linewidth=3, transform=ccrs.PlateCarree())
+
+        # Add colorbar
+        plt.colorbar(mesh, ax=ax_map, orientation='vertical')
 
 
     if outfile is not None:

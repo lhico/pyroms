@@ -3,7 +3,8 @@
 import sys
 import os
 import numpy as np
-from mpl_toolkits.basemap import Basemap
+# from mpl_toolkits.basemap import Basemap
+import cartopy.crs as ccrs
 from datetime import datetime
 try:
   import netCDF4 as netCDF
@@ -312,7 +313,7 @@ def get_ROMS_hgrid(gridid):
     else:
         #geographical grid
         print('Load geographical grid from file')
-        proj = Basemap(projection='merc', resolution=None, lat_0=0, lon_0=0)
+        proj = ccrs.Mercator()
         if 'lon_vert' in list(nc.variables.keys()) and 'lat_vert' in list(nc.variables.keys()):
             lon_vert = nc.variables['lon_vert'][:]
             lat_vert = nc.variables['lat_vert'][:]

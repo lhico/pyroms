@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from  matplotlib import cm, colors
-from mpl_toolkits.basemap import Basemap
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 import pyroms
 
 
@@ -203,18 +204,20 @@ def transectview(var, tindex, istart, iend, jstart, jend, gridid, \
         lat_min = lat.min()
         lat_max = lat.max()
         lat_0 = (lat_min + lat_max) / 2.
-        map = Basemap(projection='merc', llcrnrlon=lon_min, llcrnrlat=lat_min, \
-                 urcrnrlon=lon_max, urcrnrlat=lat_max, lat_0=lat_0, lon_0=lon_0, \
-                 resolution='i', area_thresh=10.)
-        x, y = list(map(lon,lat))
-        xt, yt = list(map(lont[0,:],latt[0,:]))
-        # fill land and draw coastlines
-        map.drawcoastlines()
-        map.fillcontinents(color='grey')
-        #map.drawmapboundary()
-        Basemap.pcolor(map, x, y, varm, axes=ax_map)
-        Basemap.plot(map, xt, yt, 'k-', linewidth=3, axes=ax_map)
+        projection = ccrs.Mercator()
+        fig, ax_map = plt.subplots(subplot_kw={'projection': projection})
+        ax_map.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
 
+        x, y = lon, lat
+        xt, yt = lont[0, :], latt[0, :]
+
+        # Fill land and draw coastlines
+        ax_map.coastlines(resolution='10m')
+        ax_map.add_feature(cfeature.LAND, color='grey')
+
+        # Plot data
+        mesh = ax_map.pcolormesh(x, y, varm, transform=ccrs.PlateCarree())
+        ax_map.plot(xt, yt, 'k-', linewidth=3, transform=ccrs.PlateCarree())
 
     if outfile is not None:
         if outfile.find('.png') != -1 or outfile.find('.svg') != -1 or outfile.find('.eps') != -1:

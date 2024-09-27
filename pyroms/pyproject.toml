@@ -1,0 +1,18 @@
+[build-system]
+requires = ["scikit-build-core", "setuptools", "cmake", "ninja"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "pyroms"
+version = "0.2.0"
+description = "pyroms is a suite of tools for working with ROMS."
+readme = "README.md"
+authors = [
+    { name="Your Name", email="your.email@example.com" }
+]
+license = { text="BSD" }
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "netCDF4",
+]

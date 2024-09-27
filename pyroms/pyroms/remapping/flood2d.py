@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 import numpy as np
-from .. import _remapping
 
 def flood2d(varz, grdz, Cpos='rho', irange=None, jrange=None, \
           spval=1e37, dmax=0, cdepth=0, kk=0):
@@ -18,6 +17,7 @@ def flood2d(varz, grdz, Cpos='rho', irange=None, jrange=None, \
                                      flooding distance
     Flood varz on gridz
     """
+    from .. import _remapping
 
     varz = varz.copy()
     varz = np.array(varz)

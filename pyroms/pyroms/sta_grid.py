@@ -3,7 +3,8 @@
 import sys
 import os
 import numpy as np
-from mpl_toolkits.basemap import Basemap
+# from mpl_toolkits.basemap import Basemap
+import cartopy.crs as ccrs
 from datetime import datetime
 try:
   import netCDF4 as netCDF
@@ -71,7 +72,9 @@ def get_Stations_hgrid(gridid, sta_file):
     else:
         #geographical grid
         print('Load geographical grid from file')
-        proj = Basemap(projection='merc', resolution=None, lat_0=0, lon_0=0)
+        # proj = Basemap(projection='merc', resolution=None, lat_0=0, lon_0=0)
+        proj = ccrs.Mercator()
+
         if 'lon_rho' in list(nc.variables.keys()) and 'lat_rho' in list(nc.variables.keys()):
             lon_rho = nc.variables['lon_rho'][:]
             lat_rho = nc.variables['lat_rho'][:]
